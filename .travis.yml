@@ -1,0 +1,52 @@
+language: cpp
+
+compiler:
+- clang
+- gcc
+
+env:
+- QT_BASE=59
+
+matrix:
+  include:
+  - os: osx
+    compiler: clang
+    env:
+     - QT_BASE=59
+  - os: linux
+    dist: trusty
+    sudo: required
+    compiler: gcc
+    env:
+     - QT_BASE=59
+
+before_install:
+  - sudo add-apt-repository ppa:beineri/opt-qt59-trusty
+  - |
+    if [ "$CXX" = "g++" ]; then
+      sudo apt-get install -qq g++-4.9 gcc-4.9 qt5-qmake qtbase5-dev
+    fi
+  - |
+    if [ "$CXX" = "clang" ]; then
+      sudo sh -c "echo 'deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.6-binaries main' >> /etc/apt/sources.list"
+      sudo sh -c "echo 'deb http://llvm.org/apt/precise/ llvm-toolchain-precise main' >> /etc/apt/sources.list"
+      wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
+      sudo apt-get install -qq llvm-3.6
+    fi
+  - sudo apt-get update -qq
+
+install:
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
+  - if [ "$CXX" = "clang" ]; then export CXX="clang++" CC="clang"; fi
+
+script:
+  - $CXX --version
+  - qmake -qt=qt5 -r "QMAKE_CXX=$CXX" "QMAKE_CC=$CC" -v
+  - cd Engine
+  - qmake -qt=qt5 -r "QMAKE_CXX=$CXX" "QMAKE_CC=$CC"
+  - make
+  - make -k check
+  - cd ../Game
+  - qmake -qt=qt5 -r "QMAKE_CXX=$CXX" "QMAKE_CC=$CC"
+  - make
+  - make -k check
