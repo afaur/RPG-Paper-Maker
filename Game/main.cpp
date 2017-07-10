@@ -30,13 +30,14 @@ int main(int argc, char *argv[])
 
     // The application can now be used even if called from another directory
     QDir bin(qApp->applicationFilePath());
-    #if defined(Q_WS_MAC)
+
         bin.cdUp();
         bin.cdUp();
         bin.cdUp();
-    #endif
+        bin.cdUp();
+
     QDir::setCurrent(bin.absolutePath());
-    qDebug() << "debug on: " + QDir::currentPath();
+    qDebug() << "debug on: " + bin.absolutePath();
 
     // Create QML engine
     QQmlApplicationEngine engine;
