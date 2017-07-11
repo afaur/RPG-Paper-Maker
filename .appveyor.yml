@@ -19,10 +19,7 @@ build_script:
 
 after_build:
   - mingw32-make
-  - dir
-  - cd release
-  - dir
-  - 7z a %PROJECT%.zip %APPVEYOR_BUILD_FOLDER%/release/%PROJECT%.exe
+  - 7z a %PROJECT%.zip %APPVEYOR_BUILD_FOLDER%/%PROJECT%/release/%PROJECT%.exe
 
 artifacts:
   - path: $(PROJECT).zip
