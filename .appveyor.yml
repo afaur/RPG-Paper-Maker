@@ -22,7 +22,7 @@ after_build:
   - 7z a %PROJECT%.zip %APPVEYOR_BUILD_FOLDER%/%PROJECT%/release/%PROJECT%.exe
 
 artifacts:
-  - path: $(PROJECT).zip
+  - path: $(APPVEYOR_BUILD_FOLDER)/$(PROJECT)/$(PROJECT).zip
     name: $(PROJECT)
 
 deploy:
@@ -31,7 +31,7 @@ deploy:
   provider: GitHub
   auth_token:
     secure: $(RELEASES_API_KEY)
-  artifact: $(PROJECT).zip            # upload all NuGet packages to release assets
+  artifact: $(PROJECT)
   draft: false
   prerelease: false
   on:
