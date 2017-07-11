@@ -12,26 +12,26 @@ install:
   - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin
 
 before_build:
-  - cd $(PROJECT)
+  - cd %PROJECT%
 
 build_script:
   - qmake
 
 after_build:
   - mingw32-make
-  - 7z a $(PROJECT).zip $(APPVEYOR_BUILD_FOLDER)/release/$(PROJECT).exe
+  - 7z a %PROJECT%.zip %APPVEYOR_BUILD_FOLDER%/release/%PROJECT%.exe
 
 artifacts:
-  - path: $(PROJECT).zip
-    name: $(PROJECT)
+  - path: %PROJECT%.zip
+    name: %PROJECT%
 
 deploy:
-  release: $(PROJECT)-v$(appveyor_build_version)
-  description: $(PROJECT_DETAILS)
+  release: %PROJECT%-v%appveyor_build_version%
+  description: %PROJECT_DETAILS%
   provider: GitHub
   auth_token:
-    secure: $(RELEASES_API_KEY)
-  artifact: $(PROJECT).zip            # upload all NuGet packages to release assets
+    secure: %RELEASES_API_KEY%
+  artifact: %PROJECT%.zip            # upload all NuGet packages to release assets
   draft: false
   prerelease: false
   on:
