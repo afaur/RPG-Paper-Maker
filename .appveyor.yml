@@ -1,8 +1,8 @@
 environment:
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       PROJECT: Engine
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       PROJECT: Game
 
 install:
@@ -11,8 +11,6 @@ install:
 
 before_build:
   - cd %PROJECT%
-  - cd C:\Qt\5.9\mingw53_32
-  - dir
 
 build_script:
   - qmake
