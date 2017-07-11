@@ -1,5 +1,7 @@
 language: cpp
 
+osx_image: xcode8.3
+
 matrix:
   include:
   - os: linux
@@ -46,7 +48,7 @@ before_install:
 - |
   if [ "$CXX" = "clang++" ]; then
     brew update
-    brew install qt${QT_MAJOR}
+    brew install qt${QT_MAJOR} swift
   fi
 
 install:
