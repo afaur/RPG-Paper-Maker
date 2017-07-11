@@ -21,7 +21,8 @@ deploy:
   release: "$(PROJECT) $(appveyor_build_version)"
   description: $(PROJECT_DETAILS)
   provider: GitHub
-  auth_token: $(RELEASES_API_KEY)
+  auth_token: 
+    secure: $(RELEASES_API_KEY)
   artifact: $(PROJECT)
   draft: true
   prerelease: true
