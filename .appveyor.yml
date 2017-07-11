@@ -11,6 +11,8 @@ install:
 
 before_build:
   - cd %PROJECT%
+  - cd C:\Qt\5.9\mingw53_32
+  - dir
 
 build_script:
   - qmake
