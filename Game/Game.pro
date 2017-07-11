@@ -120,7 +120,7 @@ win32{
     DEST = \"$$shell_path($$OUT_PWD\\$$VARIANT\\Content)\"
 }
 
-copyBR.commands = $(COPY_DIR) \"$$shell_path($$PWD\\Content)\" $$DEST
+copyBR.commands = $(COPY_DIR) \"$$shell_path($$PWD\\Content)\" $$DEST 2>/dev/null || :
 first.depends = $(first) copyBR
 export(first.depends)
 export(copyBR.commands)
