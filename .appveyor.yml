@@ -22,7 +22,7 @@ after_build:
   - 7z a %PROJECT%.zip %APPVEYOR_BUILD_FOLDER%/%PROJECT%/release/%PROJECT%.exe
 
 artifacts:
-  - path: $(APPVEYOR_BUILD_FOLDER)/$(PROJECT)/$(PROJECT).zip
+  - path: $(PROJECT)/$(PROJECT).zip
     name: $(PROJECT)
 
 deploy:
