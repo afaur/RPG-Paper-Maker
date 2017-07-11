@@ -8,18 +8,7 @@ environment:
       PROJECT_DETAILS: "RPG Paper Maker Game Runner"
 
 install:
-  - set QTDIR=C:\Qt\5.9\mingw53_32
-  - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin
-
-before_build:
-  - cd %PROJECT%
-
-build_script:
-  - qmake
-
-after_build:
-  - mingw32-make
-  - 7z a %PROJECT%.zip %APPVEYOR_BUILD_FOLDER%/%PROJECT%/release/%PROJECT%.exe
+  - 7z a %PROJECT%.zip %APPVEYOR_BUILD_FOLDER%/%PROJECT%/%PROJECT%.pro
 
 artifacts:
   - path: $(PROJECT)/$(PROJECT).zip
@@ -29,8 +18,7 @@ deploy:
   release: $(PROJECT)-v$(appveyor_build_version)
   description: $(PROJECT_DETAILS)
   provider: GitHub
-  auth_token:
-    secure: $(RELEASES_API_KEY)
+  auth_token: $(RELEASES_API_KEY)
   artifact: $(PROJECT)
   draft: false
   prerelease: false
