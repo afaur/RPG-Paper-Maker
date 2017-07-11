@@ -2,10 +2,10 @@ environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       PROJECT: Engine
-      PROJECT_DETAILS: "RPG Paper Maker Engine"
+      PROJECT_DETAILS: "Game Creator"
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       PROJECT: Game
-      PROJECT_DETAILS: "RPG Paper Maker Game Runner"
+      PROJECT_DETAILS: "Game Runner"
 
 install:
   - cd %PROJECT%
@@ -18,12 +18,12 @@ artifacts:
     name: $(PROJECT)
 
 deploy:
-  release: "RPG Paper Maker $(PROJECT) $(appveyor_build_version)"
+  release: "$(PROJECT) $(appveyor_build_version)"
   description: $(PROJECT_DETAILS)
   provider: GitHub
   auth_token: $(RELEASES_API_KEY)
   artifact: $(PROJECT)
-  draft: false
-  prerelease: false
+  draft: true
+  prerelease: true
   on:
     appveyor_repo_tag: true
