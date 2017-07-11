@@ -8,6 +8,7 @@ environment:
       PROJECT_DETAILS: "RPG Paper Maker Game Runner"
 
 install:
+  - cd %PROJECT%
   - 7z a %PROJECT%.zip %APPVEYOR_BUILD_FOLDER%/%PROJECT%/%PROJECT%.pro
 
 build: off
