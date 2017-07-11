@@ -1,6 +1,5 @@
 environment:
   matrix:
-    fast_finish: true
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       PROJECT: Engine
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
