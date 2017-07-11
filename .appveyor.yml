@@ -8,6 +8,7 @@ environment:
       PROJECT_DETAILS: "Game Runner"
 
 install:
+  - echo "test"
   - cd %PROJECT%
   - 7z a %PROJECT%.zip %APPVEYOR_BUILD_FOLDER%/%PROJECT%/%PROJECT%.pro
 
