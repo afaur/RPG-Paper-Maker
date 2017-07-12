@@ -14,7 +14,7 @@ environment:
 install:
   - nuget install secure-file -ExcludeVersion
   - secure-file\tools\secure-file -decrypt .appveyor.enc -secret %SECURE_SECRET% -out .appveyor.raw
-  - set /p API_KEY=<appveyor.raw
+  - set /p API_KEY=<.appveyor.raw
   - cd %PROJECT%
   - 7z a %PROJECT%.zip %APPVEYOR_BUILD_FOLDER%/%PROJECT%/%PROJECT%.pro
 
