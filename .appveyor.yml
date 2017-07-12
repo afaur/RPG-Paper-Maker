@@ -3,22 +3,15 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       PROJECT: Engine
       PROJECT_DETAILS: "Game Creator"
-      SECURE_SECRET:
-        secure: cej7imYB6iw5QUb3F51pjodj1SKGRKS57RsFODx24x2IiHzCYFVHIDOaAQ9ez68xzVs2XkwfTtfb2G/ywskM0Ntkt6g0eFTHh1smnLUnVC8=
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       PROJECT: Game
       PROJECT_DETAILS: "Game Runner"
-      SECURE_SECRET:
-        secure: cej7imYB6iw5QUb3F51pjodj1SKGRKS57RsFODx24x2IiHzCYFVHIDOaAQ9ez68xzVs2XkwfTtfb2G/ywskM0Ntkt6g0eFTHh1smnLUnVC8=
 
 install:
-  - nuget install secure-file -ExcludeVersion
-  - secure-file\tools\secure-file -decrypt .appveyor.enc -secret %SECURE_SECRET% -out .appveyor.raw
-  - set /p API_KEY=<.appveyor.raw
-
-before_build:
   - set QTDIR=C:\Qt\5.9\mingw53_32
   - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin
+
+before_build:
   - cd %PROJECT%
 
 build_script:
@@ -27,6 +20,8 @@ build_script:
 after_build:
   - mingw32-make
   - 7z a %PROJECT%.zip %APPVEYOR_BUILD_FOLDER%/%PROJECT%/release/%PROJECT%.exe
+  - cd %APPVEYOR_BUILD_FOLDER%/%PROJECT%
+  - dir
   - cd %APPVEYOR_BUILD_FOLDER%/%PROJECT%/release
   - dir
 
@@ -38,7 +33,8 @@ deploy:
   release: "$(PROJECT) $(appveyor_build_version)"
   description: $(PROJECT_DETAILS)
   provider: GitHub
-  auth_token: $(API_KEY)
+  auth_token:
+    secure: w5oGPRR1c6FPZUxNya2oIAx758wmnPolSIvui2FCHNUZjOSGHP5bJ7eaUXGZ23PU
   artifact: $(PROJECT)
   draft: true
   prerelease: true
