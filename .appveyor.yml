@@ -13,30 +13,10 @@ install:
 
 before_build:
   - cd %PROJECT%
-
-build_script:
-  - qmake
-
-after_build:
-  - mingw32-make
-  - 7z a %PROJECT%.zip %APPVEYOR_BUILD_FOLDER%/%PROJECT%/release/%PROJECT%.exe
-  - cd %APPVEYOR_BUILD_FOLDER%/%PROJECT%
-  - dir
-  - cd %APPVEYOR_BUILD_FOLDER%/%PROJECT%/release
+  - mkdir final
+  - mv %APPVEYOR_BUILD_FOLDER%/%PROJECT%/Content %APPVEYOR_BUILD_FOLDER%/%PROJECT%/final/Content
+  - mv %APPVEYOR_BUILD_FOLDER%/%PROJECT%/Dependencies/win32/* %APPVEYOR_BUILD_FOLDER%/%PROJECT%/final/*
+  - cd final
   - dir
 
-artifacts:
-  - path: $(PROJECT)/$(PROJECT).zip
-    name: $(PROJECT)
-
-deploy:
-  release: "$(PROJECT) $(appveyor_build_version)"
-  description: $(PROJECT_DETAILS)
-  provider: GitHub
-  auth_token:
-    secure: w5oGPRR1c6FPZUxNya2oIAx758wmnPolSIvui2FCHNUZjOSGHP5bJ7eaUXGZ23PU
-  artifact: $(PROJECT)
-  draft: true
-  prerelease: true
-  on:
-    appveyor_repo_tag: true
+build: false
