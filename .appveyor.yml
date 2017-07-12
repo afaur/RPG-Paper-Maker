@@ -1,7 +1,4 @@
 environment:
-  my_variable:
-    secure: cej7imYB6iw5QUb3F51pjodj1SKGRKS57RsFODx24x2IiHzCYFVHIDOaAQ9ez68xzVs2XkwfTtfb2G/ywskM0Ntkt6g0eFTHh1smnLUnVC8=
-environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       PROJECT: Engine
