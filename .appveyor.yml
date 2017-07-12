@@ -12,8 +12,9 @@ install:
   - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin
   - cd %PROJECT%
   - mkdir final
-  - mv %APPVEYOR_BUILD_FOLDER%/%PROJECT%/Content %APPVEYOR_BUILD_FOLDER%/%PROJECT%/final/Content
-  - mv %APPVEYOR_BUILD_FOLDER%/%PROJECT%/Dependencies/win32/* %APPVEYOR_BUILD_FOLDER%/%PROJECT%/final/*
+  - mv Dependencies/win32/* final/
+  - mv Content final/Content
+  - touch "final/RPG Paper Maker.exe"
   - cd final
   - dir
 
