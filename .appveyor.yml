@@ -1,0 +1,21 @@
+environment:
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      PROJECT: Engine
+      PROJECT_DETAILS: "Game Creator"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      PROJECT: Game
+      PROJECT_DETAILS: "Game Runner"
+
+install:
+  - set QTDIR=C:\Qt\5.9\mingw53_32
+  - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin
+  - cd %PROJECT%
+  - mkdir final
+  - mv Dependencies/win32/* final/
+  - mv Content final/Content
+  - touch "final/RPG Paper Maker.exe"
+  - cd final
+  - dir
+
+build: false

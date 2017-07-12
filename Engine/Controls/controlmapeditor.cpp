@@ -502,7 +502,7 @@ void ControlMapEditor::remove(MapEditorSelectionKind selection,
 {
     switch (selection){
     case MapEditorSelectionKind::Land:
-        removeFloor(p, subSelection, drawKind);
+        removeLand(p, subSelection, drawKind);
         break;
     case MapEditorSelectionKind::Sprites:
         removeSprite(p, subSelection, drawKind);
@@ -521,7 +521,7 @@ void ControlMapEditor::remove(MapEditorSelectionKind selection,
 // -------------------------------------------------------
 
 void ControlMapEditor::addFloor(Position& p,
-                                MapEditorSubSelectionKind ,
+                                MapEditorSubSelectionKind kind,
                                 DrawKind drawKind,
                                 QRect &tileset)
 {
@@ -535,11 +535,11 @@ void ControlMapEditor::addFloor(Position& p,
             QList<Position> positions;
             traceLine(m_previousMouseCoords, p, positions);
             for (int i = 0; i < positions.size(); i++){
-                stockFloor(positions[i],
-                           new FloorDatas(new QRect(tileset.x(),
-                                                    tileset.y(),
-                                                    tileset.width(),
-                                                    tileset.height())));
+                stockLand(positions[i],
+                          new FloorDatas(new QRect(tileset.x(),
+                                                   tileset.y(),
+                                                   tileset.width(),
+                                                   tileset.height())));
             }
         }
         for (int i = 0; i < tileset.width(); i++){
@@ -554,13 +554,14 @@ void ControlMapEditor::addFloor(Position& p,
                 shortTexture = new QRect(tileset.x() + i, tileset.y() + j,
                                          1, 1);
                 floor = new FloorDatas(shortTexture);
-                stockFloor(shortPosition, floor);
+                stockLand(shortPosition, floor);
             }
         }
         break;
     case DrawKind::Rectangle:
         break; // TODO
     case DrawKind::Pin:
+        paintPinLand(p, kind, tileset);
         break;
     }
 
@@ -569,12 +570,82 @@ void ControlMapEditor::addFloor(Position& p,
 
 // -------------------------------------------------------
 
-void ControlMapEditor::paintPinLand(Position& p, LandDatas* landAfter){
+void ControlMapEditor::paintPinLand(Position& p,
+                                    MapEditorSubSelectionKind kindAfter,
+                                    QRect& textureAfter)
+{
     if (m_map->isInGrid(p)){
         Portion portion = getLocalPortion(p);
         if (m_map->isInPortion(portion)){
             LandDatas* landBefore = getLand(portion, p);
+            MapEditorSubSelectionKind kindBefore =
+                    MapEditorSubSelectionKind::None;
+            QRect textureBefore;
+            if (landBefore != nullptr){
+                kindBefore = landBefore->getKind();
+                getLandTexture(textureBefore, landBefore);
+            }
 
+            // If it's floor, we need to reduce to square * square size texture
+            QRect textureAfterReduced;
+            if (kindAfter == MapEditorSubSelectionKind::Floors)
+                getFloorTextureReduced(textureAfter, textureAfterReduced, 0, 0);
+
+            // If the texture à different, start the algorithm
+            if (!areLandsEquals(landBefore, textureAfterReduced, kindAfter)){
+                QList<Position> tab;
+                tab.push_back(p);
+                if (kindAfter == MapEditorSubSelectionKind::None)
+                    eraseLand(p);
+                else
+                    stockLand(p, getLandAfter(kindAfter, textureAfterReduced));
+
+                while(!tab.isEmpty()){
+                    QList<Position> adjacent;
+                    Position firstPosition = tab.at(0);
+                    int x = firstPosition.x();
+                    int y = firstPosition.y();
+                    int yPlus = firstPosition.yPlus();
+                    int z = firstPosition.z();
+                    int layer = firstPosition.layer();
+
+                    // Getting all the adjacent squares
+                    adjacent << Position(x - 1, y, yPlus, z, layer);
+                    adjacent << Position(x + 1, y, yPlus, z, layer);
+                    adjacent << Position(x, y, yPlus, z + 1, layer);
+                    adjacent << Position(x, y, yPlus, z - 1, layer);
+
+                    tab.removeAt(0);
+                    for (int i = 0; i < adjacent.size(); i++){
+                        Position adjacentPosition = adjacent.at(i);
+                        int localX = adjacentPosition.x() - p.x();
+                        int localZ = adjacentPosition.z() - p.z();
+                        getFloorTextureReduced(textureAfter,
+                                               textureAfterReduced,
+                                               localX, localZ);
+                        if (m_map->isInGrid(adjacentPosition)){
+                            portion = getLocalPortion(adjacentPosition);
+                            if (m_map->isInPortion(portion)){
+                                LandDatas* landHere = getLand(portion,
+                                                              adjacentPosition);
+                                if (areLandsEquals(landHere, textureBefore,
+                                                   kindBefore))
+                                {
+                                    if (kindAfter ==
+                                            MapEditorSubSelectionKind::None)
+                                        eraseLand(adjacentPosition);
+                                    else
+                                        stockLand(adjacentPosition,
+                                                  getLandAfter(
+                                                      kindAfter,
+                                                      textureAfterReduced));
+                                    tab.push_back(adjacentPosition);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -590,25 +661,95 @@ LandDatas* ControlMapEditor::getLand(Portion& portion, Position& p){
 
 // -------------------------------------------------------
 
-void ControlMapEditor::getFloorTextureReduced(QRect* rect, QRect &rectAfter,
+void ControlMapEditor::getFloorTextureReduced(QRect& rect, QRect &rectAfter,
                                               int localX, int localZ)
 {
-    rectAfter.setX(rect->x() + (localX % rect->width()));
-    rectAfter.setY(rect->y() + (localZ % rect->height()));
+    rectAfter.setX(rect.x() + Wanok::mod(localX, rect.width()));
+    rectAfter.setY(rect.y() + Wanok::mod(localZ, rect.height()));
     rectAfter.setWidth(1);
     rectAfter.setHeight(1);
 }
 
 // -------------------------------------------------------
 
-void ControlMapEditor::stockFloor(Position& p, FloorDatas *floor){
+bool ControlMapEditor::areLandsEquals(LandDatas* landBefore,
+                                      QRect& textureAfter,
+                                      MapEditorSubSelectionKind kindAfter)
+{
+    if (landBefore == nullptr)
+        return kindAfter == MapEditorSubSelectionKind::None;
+    else{
+        if (landBefore->getKind() == kindAfter){
+            switch (kindAfter){
+            case MapEditorSubSelectionKind::Floors:
+                return (*(((FloorDatas*) landBefore)->textureRect())) ==
+                        textureAfter;
+            case MapEditorSubSelectionKind::Autotiles:
+                return false; // TODO
+            case MapEditorSubSelectionKind::Water:
+                return false; // TODO
+            default:
+                return false;
+            }
+        }
+        else
+            return false;
+    }
+}
+
+// -------------------------------------------------------
+
+LandDatas* ControlMapEditor::getLandAfter(MapEditorSubSelectionKind kindAfter,
+                                          QRect &textureAfter)
+{
+    QRect* texture = new QRect(textureAfter.x(),
+                               textureAfter.y(),
+                               textureAfter.width(),
+                               textureAfter.height());
+    switch (kindAfter) {
+    case MapEditorSubSelectionKind::Floors:
+        return new FloorDatas(texture);
+    case MapEditorSubSelectionKind::Autotiles:
+        return nullptr;
+    case MapEditorSubSelectionKind::Water:
+        return nullptr;
+    default:
+        return nullptr;
+    }
+}
+
+// -------------------------------------------------------
+
+void ControlMapEditor::getLandTexture(QRect& rect, LandDatas* land){
+    FloorDatas* floor;
+
+    switch (land->getKind()) {
+    case MapEditorSubSelectionKind::Floors:
+        floor = (FloorDatas*) land;
+        rect.setX(floor->textureRect()->x());
+        rect.setY(floor->textureRect()->y());
+        rect.setWidth(floor->textureRect()->width());
+        rect.setHeight(floor->textureRect()->height());
+        break;
+    case MapEditorSubSelectionKind::Autotiles:
+        break;
+    case MapEditorSubSelectionKind::Water:
+        break;
+    default:
+        break;
+    }
+}
+
+// -------------------------------------------------------
+
+void ControlMapEditor::stockLand(Position& p, LandDatas *landDatas){
     if (m_map->isInGrid(p)){
         Portion portion = getLocalPortion(p);
         if (m_map->isInPortion(portion)){
             MapPortion* mapPortion = m_map->mapPortion(portion);
             if (mapPortion == nullptr)
                 mapPortion = m_map->createMapPortion(portion);
-            if (mapPortion->addFloor(p, floor) && m_map->saved())
+            if (mapPortion->addLand(p, landDatas) && m_map->saved())
                 setToNotSaved();
             m_portionsToUpdate += portion;
             m_portionsToSave += portion;
@@ -618,7 +759,7 @@ void ControlMapEditor::stockFloor(Position& p, FloorDatas *floor){
 
 // -------------------------------------------------------
 
-void ControlMapEditor::removeFloor(Position& p,
+void ControlMapEditor::removeLand(Position& p,
                                    MapEditorSubSelectionKind ,
                                    DrawKind drawKind)
 {
@@ -627,9 +768,9 @@ void ControlMapEditor::removeFloor(Position& p,
         QList<Position> positions;
         traceLine(m_previousMouseCoords, p, positions);
         for (int i = 0; i < positions.size(); i++)
-            eraseFloor(positions[i]);
+            eraseLand(positions[i]);
 
-        eraseFloor(p);
+        eraseLand(p);
     }
 
     m_previousMouseCoords = p;
@@ -637,13 +778,13 @@ void ControlMapEditor::removeFloor(Position& p,
 
 // -------------------------------------------------------
 
-void ControlMapEditor::eraseFloor(Position& p){
+void ControlMapEditor::eraseLand(Position& p){
     if (m_map->isInGrid(p)){
         Portion portion = getLocalPortion(p);
         if (m_map->isInPortion(portion)){
             MapPortion* mapPortion = m_map->mapPortion(portion);
             if (mapPortion != nullptr){
-                if (mapPortion->deleteFloor(p) && m_map->saved())
+                if (mapPortion->deleteLand(p) && m_map->saved())
                     setToNotSaved();
                 m_portionsToUpdate += portion;
                 m_portionsToSave += portion;
