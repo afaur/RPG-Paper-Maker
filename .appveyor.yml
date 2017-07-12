@@ -3,17 +3,17 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       PROJECT: Engine
       PROJECT_DETAILS: "Game Creator"
-      RELEASES_API_KEY:
+      SECURE_SECRET:
         secure: cej7imYB6iw5QUb3F51pjodj1SKGRKS57RsFODx24x2IiHzCYFVHIDOaAQ9ez68xzVs2XkwfTtfb2G/ywskM0Ntkt6g0eFTHh1smnLUnVC8=
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       PROJECT: Game
       PROJECT_DETAILS: "Game Runner"
-      SECURE_API_KEY:
+      SECURE_SECRET:
         secure: cej7imYB6iw5QUb3F51pjodj1SKGRKS57RsFODx24x2IiHzCYFVHIDOaAQ9ez68xzVs2XkwfTtfb2G/ywskM0Ntkt6g0eFTHh1smnLUnVC8=
 
 install:
   - nuget install secure-file -ExcludeVersion
-  - secure-file\tools\secure-file -decrypt .appveyor.enc -secret %RELEASES_API_KEY% -out .appveyor.raw
+  - secure-file\tools\secure-file -decrypt .appveyor.enc -secret %SECURE_SECRET% -out .appveyor.raw
   - set /p API_KEY=<appveyor.raw
   - cd %PROJECT%
   - 7z a %PROJECT%.zip %APPVEYOR_BUILD_FOLDER%/%PROJECT%/%PROJECT%.pro
