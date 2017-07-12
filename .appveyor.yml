@@ -10,8 +10,6 @@ environment:
 install:
   - set QTDIR=C:\Qt\5.9\mingw53_32
   - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin
-
-before_build:
   - cd %PROJECT%
   - mkdir final
   - mv %APPVEYOR_BUILD_FOLDER%/%PROJECT%/Content %APPVEYOR_BUILD_FOLDER%/%PROJECT%/final/Content
